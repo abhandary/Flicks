@@ -36,6 +36,7 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     public var isNowPlaying : Bool!
     
     var selectedPath : String = ""
+    var selectedText : String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -133,9 +134,11 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         if let movies = self.movies,
             let movie = movies[indexPath.row] as? [String : Any],
-            let path = movie[kJSONPosterPath] as? String {
+            let path = movie[kJSONPosterPath] as? String,
+            let text = movie[kJSONDetail] as? String {
             
             self.selectedPath = path;
+            self.selectedText = text;
         }
         return indexPath;
     }
@@ -192,6 +195,7 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
         if segue.identifier! == "showDetailSegue",
             let destination = segue.destination as? DetailViewController {
             destination.imagePath = "\(kImageBaseURL)\(self.selectedPath)"
+            destination.text = self.selectedText;
         }
     }
 }

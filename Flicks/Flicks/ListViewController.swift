@@ -55,7 +55,10 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
 
     override func viewWillAppear(_ animated: Bool) {
-        
+
+        self.tableView.dataSource = self;
+        self.tableView.delegate = self;
+
         if self.tabBarController?.selectedIndex == 0 {
             self.movieURL = "https://api.themoviedb.org/3/movie/now_playing?";
         } else {
@@ -127,14 +130,19 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
         return self.movies?.count ?? 0;
     }
     
-    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        
+    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         if let movies = self.movies,
             let movie = movies[indexPath.row] as? [String : Any],
             let path = movie[kJSONPosterPath] as? String {
             
             self.selectedPath = path;
         }
+        return indexPath;
+    }
+    
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        
+        
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

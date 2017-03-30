@@ -17,6 +17,8 @@
 		E2A177061E8B504B00C89DAB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E2A177041E8B504B00C89DAB /* LaunchScreen.storyboard */; };
 		E2A1770E1E8B5D8F00C89DAB /* NavigationControllerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A1770D1E8B5D8F00C89DAB /* NavigationControllerViewController.swift */; };
 		E2A177101E8B616300C89DAB /* TabBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A1770F1E8B616300C89DAB /* TabBarViewController.swift */; };
+		E2B703A01E8CC21C00D3AC5A /* MovieTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B7039F1E8CC21C00D3AC5A /* MovieTableViewCell.swift */; };
+		E2CD9C741E8CDAB1007037B3 /* MovieCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CD9C731E8CDAB1007037B3 /* MovieCollectionViewCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +36,8 @@
 		E2A177071E8B504B00C89DAB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E2A1770D1E8B5D8F00C89DAB /* NavigationControllerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavigationControllerViewController.swift; sourceTree = "<group>"; };
 		E2A1770F1E8B616300C89DAB /* TabBarViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabBarViewController.swift; sourceTree = "<group>"; };
+		E2B7039F1E8CC21C00D3AC5A /* MovieTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MovieTableViewCell.swift; sourceTree = "<group>"; };
+		E2CD9C731E8CDAB1007037B3 /* MovieCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MovieCollectionViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +91,8 @@
 				E2A1770F1E8B616300C89DAB /* TabBarViewController.swift */,
 				E29B63B81E8B71890040E5D7 /* Networking.swift */,
 				E29B63BA1E8B8BB60040E5D7 /* DetailViewController.swift */,
+				E2B7039F1E8CC21C00D3AC5A /* MovieTableViewCell.swift */,
+				E2CD9C731E8CDAB1007037B3 /* MovieCollectionViewCell.swift */,
 			);
 			path = Flicks;
 			sourceTree = "<group>";
@@ -225,10 +231,12 @@
 			files = (
 				E2A176FA1E8B504B00C89DAB /* AppDelegate.swift in Sources */,
 				E29B63B91E8B71890040E5D7 /* Networking.swift in Sources */,
+				E2B703A01E8CC21C00D3AC5A /* MovieTableViewCell.swift in Sources */,
 				E2A1770E1E8B5D8F00C89DAB /* NavigationControllerViewController.swift in Sources */,
 				E29B63BB1E8B8BB60040E5D7 /* DetailViewController.swift in Sources */,
 				E2A177101E8B616300C89DAB /* TabBarViewController.swift in Sources */,
 				E2A176FC1E8B504B00C89DAB /* ListViewController.swift in Sources */,
+				E2CD9C741E8CDAB1007037B3 /* MovieCollectionViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

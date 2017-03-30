@@ -9,15 +9,18 @@
 import UIKit
 import AFNetworking
 
-class ListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class ListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource {
 
     let kJSONResults = "results"
     let kJSONTitle = "original_title"
     let kJSONDetail = "overview";
     let kJSONBackdropPath = "backdrop_path"
     let kJSONPosterPath = "poster_path"
+    let kShowDetailViewSegue = "showDetailSegue";
+    let kShowDetailViewFromCollectionViewSegue = "showDetailViewFromCollectionView";
     
-    let kTableViewCellReusableID = "tableViewCell"
+    let kTableViewCellReusableID = "MovieTableViewCell"
+    let kCollectionViewCellReusableID = "MovieCollectionViewCell"
     
     let kImageBaseURL = "https://image.tmdb.org/t/p/w185/";
     
@@ -26,21 +29,16 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
 
-    var queue : DispatchQueue!;
     var refreshControl : UIRefreshControl!
     
     var movies : [AnyObject]?;
     
     var movieURL : String = "";
     
-    public var isNowPlaying : Bool!
-    
-    var selectedPath : String = ""
-    var selectedText : String = ""
+    var collectionViewSelectedIndexPath : IndexPath?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.isNowPlaying = true;
         
         
         // setup table view
@@ -50,9 +48,11 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
         self.tableView.refreshControl = self.refreshControl;
         self.refreshControl.addTarget(self, action: #selector(refreshList), for: UIControlEvents.allEvents);
         
-        self.queue = DispatchQueue(label: "Serial Queue");
-        
         refreshList();
+        
+        // setup collection view
+        self.collectionView.delegate = self
+        self.collectionView.dataSource = self;
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -87,19 +87,18 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     // MARK: - Refresh Control
     func refreshList() {
-        self.queue.async {
-            let url = URL(string: "\(self.movieURL)api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed");
-            Networking.get(url: url!,
-                success: { (data : Data) in
-                    self.refreshControl.endRefreshing();
-                    self.handleSuccess(data: data);
-                },
-                failure: { (error : Error?) in
-                    self.refreshControl.endRefreshing();
-                    print(error);
-                }
-            );
-        }
+        
+        let url = URL(string: "\(self.movieURL)api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed");
+        Networking.get(url: url!,
+                       success: { (data : Data) in
+                        self.refreshControl.endRefreshing();
+                        self.handleSuccess(data: data);
+            },
+                       failure: { (error : Error?) in
+                        self.refreshControl.endRefreshing();
+                        print(error);
+            }
+        );
     }
     
     func handleSuccess(data : Data) {
@@ -113,7 +112,7 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
             } else {
                 self.showError();
             }
-            print(jsonObject);
+           // print(jsonObject);
         }catch   {
             print("error reading json: \(error)");
             self.showError();
@@ -131,52 +130,41 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
         return self.movies?.count ?? 0;
     }
     
-    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
-        if let movies = self.movies,
-            let movie = movies[indexPath.row] as? [String : Any],
-            let path = movie[kJSONPosterPath] as? String,
-            let text = movie[kJSONDetail] as? String {
-            
-            self.selectedPath = path;
-            self.selectedText = text;
-        }
-        return indexPath;
-    }
-    
-    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        
-        
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: false);
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         if let movies = self.movies, let movie = movies[indexPath.row] as? [String : Any] {
             
-            if let cell = self.tableView.dequeueReusableCell(withIdentifier: kTableViewCellReusableID),
+            if let cell = self.tableView.dequeueReusableCell(withIdentifier: kTableViewCellReusableID) as? MovieTableViewCell,
                 let title = movie[kJSONTitle] as? String,
                 let summary = movie[kJSONDetail] as? String,
-                let imagePath = movie[kJSONPosterPath] as? String {
-                    
-                    let url = URL(string: "\(kImageBaseURL)\(imagePath)")!
-                    cell.textLabel?.text = title;
-                    cell.detailTextLabel?.text = summary;
+                let imagePath = movie[kJSONBackdropPath] as? String {
                 
-                    cell.imageView?.setImageWith(URLRequest(url: url), placeholderImage: nil,
-                                             success:{ (imageRequest, imageResponse, image) -> Void in
-                    
-                    // imageResponse will be nil if the image is cached
-                    if imageResponse != nil {
-                        print("Image was NOT cached, fade in image")
-                        cell.imageView?.alpha = 0.0
-                        cell.imageView?.isHidden = false;
-                        cell.imageView?.image = image
-                        UIView.animate(withDuration: 0.3, animations: { () -> Void in
-                            cell.imageView?.alpha = 1.0
-                        })
-                    } else {
-                        print("Image was cached so just update the image")
-                        cell.imageView?.image = image
-                    }
+                let url = URL(string: "\(kImageBaseURL)\(imagePath)")!
+                
+                cell.movieTitle.text = title;
+                cell.movieSummary.text = summary;
+                cell.movieImageView?.setImageWith(URLRequest(url: url), placeholderImage: nil,
+                                                  success:{ (imageRequest, imageResponse, image) -> Void in
+                                                    
+                                                    // imageResponse will be nil if the image is cached
+                                                    if imageResponse != nil {
+                                                        print("Image was NOT cached, fade in image")
+                                                        cell.movieImageView?.alpha = 0.0
+                                                        cell.movieImageView?.image = image
+                                                        cell.movieImageView?.contentMode = UIViewContentMode.scaleToFill
+                                                        UIView.animate(withDuration: 0.3, animations: { () -> Void in
+                                                            cell.movieImageView?.alpha = 1.0
+                                                        })
+                                                    } else {
+                                                        print("Image was cached so just update the image")
+                                                        cell.movieImageView?.image = image
+                                                        cell.movieImageView?.contentMode = UIViewContentMode.scaleToFill
+                                                    }
                     },failure: { (imageRequest, imageResponse, error) -> Void in
                         self.showError();
                 })
@@ -187,16 +175,93 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 130.0
+        return 100.0
     }
     
+    
+    // MARK: - Collection View Data Source
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+        if let movies = self.movies, let movie = movies[indexPath.row] as? [String : Any] {
+            
+            if let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: kCollectionViewCellReusableID, for: indexPath) as? MovieCollectionViewCell,
+                let title = movie[kJSONTitle] as? String,
+                let imagePath = movie[kJSONPosterPath] as? String {
+                
+                let url = URL(string: "\(kImageBaseURL)\(imagePath)")!
+                
+                cell.movieTitle.text = title;
+                cell.movieTitle.isHidden = true;
+                cell.movieImageView?.setImageWith(URLRequest(url: url), placeholderImage: nil,
+                                                  success:{ (imageRequest, imageResponse, image) -> Void in
+                                                    
+                                                    // imageResponse will be nil if the image is cached
+                                                    if imageResponse != nil {
+                                                        print("Image was NOT cached, fade in image")
+                                                        cell.movieImageView?.alpha = 0.0
+                                                        cell.movieImageView?.isHidden = false;
+                                                        cell.movieImageView?.image = image
+                                                        
+                                                        UIView.animate(withDuration: 0.3, animations: { () -> Void in
+                                                            cell.movieImageView?.alpha = 1.0
+                                                        })
+                                                    } else {
+                                                        print("Image was cached so just update the image")
+                                                        cell.movieImageView?.image = image
+                                                    }
+                    },failure: { (imageRequest, imageResponse, error) -> Void in
+                        self.showError();
+                })
+                return cell;
+            }
+        }
+        return UICollectionViewCell();
+        
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return self.movies?.count ?? 0;
+    }
+
+    
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        self.collectionViewSelectedIndexPath = indexPath;
+        collectionView.deselectItem(at: indexPath, animated: false);
+    }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier! == "showDetailSegue",
+        if segue.identifier! == kShowDetailViewSegue,
             let destination = segue.destination as? DetailViewController {
-            destination.imagePath = "\(kImageBaseURL)\(self.selectedPath)"
-            destination.text = self.selectedText;
+            if let indexPath =  self.tableView.indexPathForSelectedRow,
+                let movies = self.movies,
+                let movie = movies[indexPath.row] as? [String : Any],
+                let path = movie[kJSONPosterPath] as? String,
+                let text = movie[kJSONDetail] as? String {
+                
+                destination.imagePath = "\(kImageBaseURL)\(path)"
+                destination.text = text;
+            }
         }
+        
+        
+        
+        if segue.identifier! == kShowDetailViewFromCollectionViewSegue,
+            let destination = segue.destination as? DetailViewController {
+                
+            if let indexPaths =  self.collectionView.indexPathsForSelectedItems,
+                let movies = self.movies,
+                let movie = movies[indexPaths[0].row] as? [String : Any],
+                let path = movie[kJSONPosterPath] as? String,
+                let text = movie[kJSONDetail] as? String {
+                
+                    
+                destination.imagePath = "\(kImageBaseURL)\(path)"
+                destination.text = text;
+            }
+        }
+        
+        
     }
+    
 }
 

@@ -21,9 +21,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="062-jd-YQo">
-                                <frame key="frameInset" minY="137" maxY="55"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="062-jd-YQo">
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="iJn-jD-kTO">
                                     <size key="itemSize" width="195" height="150"/>
@@ -67,9 +65,7 @@
                                     </collectionViewCell>
                                 </cells>
                             </collectionView>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="dRT-bx-xzj">
-                                <frame key="frameInset" minY="137" maxY="55"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="dRT-bx-xzj">
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="MovieTableViewCell" rowHeight="130" id="VVZ-XJ-SPJ" customClass="MovieTableViewCell" customModule="Flicks">
@@ -154,9 +150,7 @@
                                     <constraint firstItem="Bjv-7G-SPu" firstAttribute="centerY" secondItem="rEn-ah-4YQ" secondAttribute="centerY" id="Vv9-E5-1oE"/>
                                 </constraints>
                             </view>
-                            <segmentedControl opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="Jds-oi-bN4">
-                                <frame key="frameInset" minY="64" height="29"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="Jds-oi-bN4">
                                 <segments>
                                     <segment title="" image="list"/>
                                     <segment title="" image="grid"/>
@@ -165,17 +159,29 @@
                                     <action selector="segControlValueChanged:" destination="Ytb-mb-YRY" eventType="valueChanged" id="ZVk-IX-kHg"/>
                                 </connections>
                             </segmentedControl>
-                            <searchBar contentMode="redraw" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BCu-sQ-Xsr">
-                                <frame key="frameInset" minY="92" height="44"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                            <searchBar contentMode="redraw" translatesAutoresizingMaskIntoConstraints="NO" id="BCu-sQ-Xsr">
                                 <textInputTraits key="textInputTraits"/>
                             </searchBar>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="dRT-bx-xzj" firstAttribute="leading" secondItem="Slo-Un-wgh" secondAttribute="leading" id="3Pl-No-Zql"/>
+                            <constraint firstAttribute="trailing" secondItem="062-jd-YQo" secondAttribute="trailing" id="688-IM-1vI"/>
                             <constraint firstItem="rEn-ah-4YQ" firstAttribute="leading" secondItem="Slo-Un-wgh" secondAttribute="leading" id="OiT-YZ-Kz3"/>
                             <constraint firstAttribute="trailing" secondItem="rEn-ah-4YQ" secondAttribute="trailing" id="Qm9-A0-Bgv"/>
+                            <constraint firstItem="dRT-bx-xzj" firstAttribute="top" secondItem="BCu-sQ-Xsr" secondAttribute="bottom" id="U8M-AF-Z9A"/>
+                            <constraint firstItem="BCu-sQ-Xsr" firstAttribute="leading" secondItem="Slo-Un-wgh" secondAttribute="leading" id="Uic-yY-tVi"/>
+                            <constraint firstItem="062-jd-YQo" firstAttribute="top" secondItem="BCu-sQ-Xsr" secondAttribute="bottom" id="ZFc-Fh-aUP"/>
+                            <constraint firstAttribute="trailing" secondItem="BCu-sQ-Xsr" secondAttribute="trailing" id="eDN-2b-Zcg"/>
+                            <constraint firstItem="Jds-oi-bN4" firstAttribute="top" secondItem="BZi-1f-CwQ" secondAttribute="bottom" id="faA-BK-ZDk"/>
                             <constraint firstItem="69B-gr-xPK" firstAttribute="top" secondItem="rEn-ah-4YQ" secondAttribute="bottom" constant="50" id="k9T-Z3-7DC"/>
+                            <constraint firstAttribute="trailing" secondItem="Jds-oi-bN4" secondAttribute="trailing" id="kRb-dL-hBz"/>
+                            <constraint firstItem="69B-gr-xPK" firstAttribute="top" secondItem="dRT-bx-xzj" secondAttribute="bottom" id="kcm-RO-e63"/>
+                            <constraint firstItem="062-jd-YQo" firstAttribute="leading" secondItem="Slo-Un-wgh" secondAttribute="leading" id="kgu-EA-qLw"/>
+                            <constraint firstItem="BCu-sQ-Xsr" firstAttribute="top" secondItem="Jds-oi-bN4" secondAttribute="bottom" id="mG7-UT-BaV"/>
+                            <constraint firstItem="Jds-oi-bN4" firstAttribute="leading" secondItem="Slo-Un-wgh" secondAttribute="leading" id="okl-Dd-tqv"/>
+                            <constraint firstItem="69B-gr-xPK" firstAttribute="top" secondItem="062-jd-YQo" secondAttribute="bottom" id="qAV-pe-OSa"/>
+                            <constraint firstAttribute="trailing" secondItem="dRT-bx-xzj" secondAttribute="trailing" id="sjh-lP-NIC"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="jFN-e2-2eo"/>

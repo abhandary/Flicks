@@ -89,6 +89,7 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
             self.collectionView.isHidden = true;
             self.tableView.isHidden = false;
         }
+        reloadList();
     }
     
     
@@ -122,7 +123,7 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
             if let jsonDict = jsonObject as? [String : Any] {
                 self.movies = jsonDict[self.kJSONResults] as! [[String : Any]]?;
                 DispatchQueue.main.async {
-                    self.tableView.reloadData();
+                    self.reloadList();
                 };
             } else {
                 self.showError();
@@ -138,25 +139,38 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
     }
     
-    
+    func reloadList() {
+        if self.segmentedControl.selectedSegmentIndex == 0 {
+            self.tableView.reloadData();
+        } else {
+            self.collectionView.reloadData();
+        }
+    }
     
     // MARK: - UITableViewDataSource methods
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.movies?.count ?? 0
+        return self.moviesList()?.count ?? 0
     }
     
+    func moviesList() -> [[String : Any]]?
+    {
+        if let _ = self.filteredMovies {
+            return self.filteredMovies;
+        }
+        
+        if let _ = self.movies {
+            return self.movies;
+        }
+        return nil;
+    }
     
-//    func moviesList() -> [AnyObject]? {
-//        return isFiltered ?  (self.filteredMovies?.count ?? 0)  : (self.movies?.count ?? 0);
-//    }
-
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false);
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        if let movies = self.movies {
+        if let movies = self.moviesList() {
             let movie = movies[indexPath.row]
             
             if let cell = self.tableView.dequeueReusableCell(withIdentifier: kTableViewCellReusableID) as? MovieTableViewCell,
@@ -202,7 +216,7 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     // MARK: - Collection View Data Source
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        if let movies = self.movies  {
+        if let movies = self.moviesList()  {
             let movie = movies[indexPath.row]
             if let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: kCollectionViewCellReusableID, for: indexPath) as? MovieCollectionViewCell,
                 let title = movie[kJSONTitle] as? String,
@@ -240,7 +254,7 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.movies?.count ?? 0
+        return self.moviesList()?.count ?? 0
     }
 
     
@@ -250,67 +264,59 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     
-    // MARK: - Search Bar Delegate
+    // MARK: - a Bar Delegate
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         
         guard let movies = self.movies else { self.filteredMovies = nil; return; }
         
         if searchText.characters.count == 0 {
             self.filteredMovies = nil;
+            reloadList();
             return;
         }
         
         self.filteredMovies = [[String : Any]]();
         for movie in movies {
-            if let movie = movie as? [String : Any],
-                let movieTitle = movie[kJSONTitle] as? String,
+            if let movieTitle = movie[kJSONTitle] as? String,
                 let movieSummary = movie[kJSONDetail] as? String  {
                 
                 let titleRange = movieTitle.range(of: searchText);
-                let summaryRange = movieTitle.range(of: searchText);
+                let summaryRange = movieSummary.range(of: searchText);
                 if titleRange?.isEmpty == false || summaryRange?.isEmpty == false {
                     self.filteredMovies?.append(movie);
                 }
             }
         }
-        self.tableView.reloadData();
+        reloadList();
         
     }
 
 
     // MARK: - Segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier! == kShowDetailViewSegue,
-            let destination = segue.destination as? DetailViewController {
-            if let indexPath =  self.tableView.indexPathForSelectedRow,
-                let movies = self.movies,
-                let movie = movies[indexPath.row] as? [String : Any],
-                let path = movie[kJSONPosterPath] as? String,
+        
+        var indexPath : IndexPath? = nil;
+        if segue.identifier! == kShowDetailViewSegue {
+            indexPath =  self.tableView.indexPathForSelectedRow
+        } else if segue.identifier! == kShowDetailViewFromCollectionViewSegue {
+            if let indexPaths = self.collectionView.indexPathsForSelectedItems {
+                indexPath = indexPaths[0];
+            }
+        }
+        
+        if let destination = segue.destination as? DetailViewController,
+            let indexPath = indexPath,
+            let movies = self.moviesList() {
+            
+            let movie = movies[indexPath.row]
+            if   let path = movie[kJSONPosterPath] as? String,
                 let text = movie[kJSONDetail] as? String {
                 
                 destination.imagePath = "\(kImageBaseURL)\(path)"
                 destination.text = text;
             }
+            
         }
-        
-        
-        
-        if segue.identifier! == kShowDetailViewFromCollectionViewSegue,
-            let destination = segue.destination as? DetailViewController {
-                
-            if let indexPaths =  self.collectionView.indexPathsForSelectedItems,
-                let movies = self.movies,
-                let movie = movies[indexPaths[0].row] as? [String : Any],
-                let path = movie[kJSONPosterPath] as? String,
-                let text = movie[kJSONDetail] as? String {
-                
-                    
-                destination.imagePath = "\(kImageBaseURL)\(path)"
-                destination.text = text;
-            }
-        }
-        
-        
     }
     
 }

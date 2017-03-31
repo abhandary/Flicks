@@ -14,8 +14,14 @@ class DetailViewController: UIViewController {
     @IBOutlet weak var imageView: UIImageView!
     
     
+    let monthMap = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    
     public var imagePath : String = "";
     public var text : String = "";
+    public var movieTitle : String = ""
+    public var releaseDate : String = ""
+    public var voteAverage : Double = 0.0
+    public var backdropImage : UIImage!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,34 +34,38 @@ class DetailViewController: UIViewController {
         // set the scrollable view
         let grayView = UIView(frame: CGRect(x: 50, y: 300, width: scrollView.contentSize.width - 100, height: 350));
         grayView.backgroundColor = UIColor.black;
-        grayView.alpha = 0.6;
+        grayView.alpha = 0.8;
         scrollView.addSubview(grayView)
         scrollView.showsVerticalScrollIndicator = false;
         
-        let label = UILabel(frame: CGRect(x: 0, y: 0, width: scrollView.contentSize.width - 100, height: 350));
-      //  label.numberOfLines = 15;
+        // format the date
+        let dateParts = releaseDate.components(separatedBy: "-");
+        let month = Int(dateParts[1])
+        var dateString = "";
+        if let month = month {
+            dateString = "\(monthMap[month - 1]) \(dateParts[2]), \(dateParts[0])"
+        }
+        
+        let voteAvgInt = Int(self.voteAverage * 10);
+        let label = UILabel(frame: CGRect(x: 5, y: 10, width: scrollView.contentSize.width - 100, height: 350));
+        label.numberOfLines = 0;
         label.lineBreakMode = NSLineBreakMode.byWordWrapping;
-        label.text = text;
+        label.text = "\(movieTitle)\n\n\(dateString)\n👑  \(voteAvgInt)%\n\n\(text)" ;
+        label.font = UIFont(name: "Arial-BoldMT", size: 16);
 
-        let myString: NSString = text as NSString
-        let expectedLabelSize: CGSize = myString.size(attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: 14.0)]);
-        
         //adjust the label the the new height.
-        var newFrame = label.frame;
-        newFrame.size.height = expectedLabelSize.height;
-        label.frame = newFrame;
-        
         label.textColor = UIColor.white;
+        label.sizeToFit();
         
-      //  grayView.frame = CGRect(x: 50, y: 300, width: label.frame.width, height: label.frame.height);
-        
+        // adjust the gray view's frame per the label's adjusted frame
+        grayView.frame = CGRect(x: (UIScreen.main.bounds.width - label.frame.width) / 2, y:scrollView.bounds.height - label.frame.height, width: label.frame.width + 10, height: label.frame.height + 20);
         grayView.addSubview(label);
-        // scrollView.addSubview(label);
-
-
+        
         // set to new content height based on label height
         contentHeight = grayView.frame.height + scrollView.bounds.height - 300;
-      //  scrollView.contentSize = CGSize(width: contentWidth, height: contentHeight);
+        
+        // set image view to low res image until high res loads
+        self.imageView.image = self.backdropImage;
     }
 
     override func viewWillAppear(_ animated: Bool) {

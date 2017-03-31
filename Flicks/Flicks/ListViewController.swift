@@ -17,6 +17,8 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     let kJSONDetail = "overview";
     let kJSONBackdropPath = "backdrop_path"
     let kJSONPosterPath = "poster_path"
+    let kJSONReleaseDate = "release_date"
+    let kJSONVoteAverage = "vote_average"
     let kShowDetailViewSegue = "showDetailSegue";
     let kShowDetailViewFromCollectionViewSegue = "showDetailViewFromCollectionView";
     
@@ -37,7 +39,7 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     var filteredMovies : [[String : Any]]?;
     
     var movieURL : String = "";
-    
+    var voteCount : Int = 0;
     var collectionViewSelectedIndexPath : IndexPath?
     
     
@@ -180,6 +182,10 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
                 
                 let url = URL(string: "\(kImageBaseURL)\(imagePath)")!
                 
+                let backgroundView = UIView()
+                backgroundView.backgroundColor = UIColor.white
+                cell.selectedBackgroundView = backgroundView
+                
                 cell.movieTitle.text = title;
                 cell.movieSummary.text = summary;
                 cell.movieImageView?.setImageWith(URLRequest(url: url), placeholderImage: nil,
@@ -310,10 +316,19 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
             
             let movie = movies[indexPath.row]
             if   let path = movie[kJSONPosterPath] as? String,
+                let title = movie[kJSONTitle] as? String,
+                let releaseDate = movie[kJSONReleaseDate] as? String,
+                let voteAverage = movie[kJSONVoteAverage] as? Double,
                 let text = movie[kJSONDetail] as? String {
                 
                 destination.imagePath = "\(kImageBaseURL)\(path)"
+                destination.movieTitle = title;
                 destination.text = text;
+                destination.releaseDate = releaseDate;
+                destination.voteAverage = voteAverage
+                if let cell = self.tableView.cellForRow(at: indexPath) as? MovieTableViewCell {
+                    destination.backdropImage = cell.movieImageView.image;
+                }
             }
             
         }

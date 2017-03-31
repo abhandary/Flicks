@@ -16,7 +16,7 @@ class NavigationControllerViewController: UINavigationController {
         self.navigationBar.backgroundColor = UIColor.clear
         self.navigationBar.shadowImage = UIImage();
         self.navigationBar.isTranslucent = true
-        // Do any additional setup after loading the view.
+        self.navigationBar.tintColor = UIColor.black;
     }
 
     override func didReceiveMemoryWarning() {

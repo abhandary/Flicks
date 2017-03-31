@@ -21,6 +21,8 @@ class TabBarViewController: UITabBarController {
         topRatedVC?.title = "Top Rated";
         topRatedVC?.tabBarItem.image = UIImage(named: "star", in: Bundle(for: type(of: self)), compatibleWith: nil);
         
+        self.tabBar.tintColor = UIColor.black;
+        
         self.viewControllers = [nowPlayingVC!, topRatedVC!];
         
         // Do any additional setup after loading the view.

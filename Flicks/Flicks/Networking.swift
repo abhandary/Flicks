@@ -12,7 +12,8 @@ import Foundation
 class Networking {
     
     static func get(url : URL, success :  @escaping (Data)->Void, failure : @escaping (Error?)->Void) {
-        let urlRequest = URLRequest(url: url);
+
+        let urlRequest = URLRequest(url: url, cachePolicy: URLRequest.CachePolicy.returnCacheDataElseLoad, timeoutInterval: 5);
         let config = URLSessionConfiguration.default;
         let session = URLSession(configuration: config);
         

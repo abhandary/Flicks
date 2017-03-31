@@ -8,8 +8,9 @@
 
 import UIKit
 import AFNetworking
+import MBProgressHUD
 
-class ListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource {
+class ListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, UISearchBarDelegate {
 
     let kJSONResults = "results"
     let kJSONTitle = "original_title"
@@ -28,14 +29,17 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var networkErrorMessageView: UIView!
 
     var refreshControl : UIRefreshControl!
     
-    var movies : [AnyObject]?;
+    var movies : [[String : Any]]?;
+    var filteredMovies : [[String : Any]]?;
     
     var movieURL : String = "";
     
     var collectionViewSelectedIndexPath : IndexPath?
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,11 +52,14 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
         self.tableView.refreshControl = self.refreshControl;
         self.refreshControl.addTarget(self, action: #selector(refreshList), for: UIControlEvents.allEvents);
         
-        refreshList();
-        
         // setup collection view
         self.collectionView.delegate = self
         self.collectionView.dataSource = self;
+        
+        // setup search bar
+        self.searchBar.delegate = self;
+        
+        self.view.addSubview(self.networkErrorMessageView);
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -87,16 +94,24 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     // MARK: - Refresh Control
     func refreshList() {
-        
+
+        self.networkErrorMessageView.isHidden = true;
+        let hud = MBProgressHUD.showAdded(to: self.view, animated: true);
         let url = URL(string: "\(self.movieURL)api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed");
         Networking.get(url: url!,
                        success: { (data : Data) in
-                        self.refreshControl.endRefreshing();
+                        DispatchQueue.main.async {
+                            hud.hide(animated: true);
+                            self.refreshControl.endRefreshing();
+                        }
                         self.handleSuccess(data: data);
             },
                        failure: { (error : Error?) in
-                        self.refreshControl.endRefreshing();
-                        print(error);
+                        DispatchQueue.main.async {
+                            self.networkErrorMessageView.isHidden = false;
+                            hud.hide(animated: true);
+                            self.refreshControl.endRefreshing();
+                        }
             }
         );
     }
@@ -105,7 +120,7 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
         do {
             let jsonObject = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers);
             if let jsonDict = jsonObject as? [String : Any] {
-                self.movies = jsonDict[self.kJSONResults] as! [AnyObject]?;
+                self.movies = jsonDict[self.kJSONResults] as! [[String : Any]]?;
                 DispatchQueue.main.async {
                     self.tableView.reloadData();
                 };
@@ -127,9 +142,13 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     // MARK: - UITableViewDataSource methods
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.movies?.count ?? 0;
+        return self.movies?.count ?? 0
     }
     
+    
+//    func moviesList() -> [AnyObject]? {
+//        return isFiltered ?  (self.filteredMovies?.count ?? 0)  : (self.movies?.count ?? 0);
+//    }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false);
@@ -137,7 +156,8 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        if let movies = self.movies, let movie = movies[indexPath.row] as? [String : Any] {
+        if let movies = self.movies {
+            let movie = movies[indexPath.row]
             
             if let cell = self.tableView.dequeueReusableCell(withIdentifier: kTableViewCellReusableID) as? MovieTableViewCell,
                 let title = movie[kJSONTitle] as? String,
@@ -182,8 +202,8 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     // MARK: - Collection View Data Source
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        if let movies = self.movies, let movie = movies[indexPath.row] as? [String : Any] {
-            
+        if let movies = self.movies  {
+            let movie = movies[indexPath.row]
             if let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: kCollectionViewCellReusableID, for: indexPath) as? MovieCollectionViewCell,
                 let title = movie[kJSONTitle] as? String,
                 let imagePath = movie[kJSONPosterPath] as? String {
@@ -220,7 +240,7 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.movies?.count ?? 0;
+        return self.movies?.count ?? 0
     }
 
     
@@ -229,6 +249,36 @@ class ListViewController: UIViewController, UITableViewDataSource, UITableViewDe
         collectionView.deselectItem(at: indexPath, animated: false);
     }
     
+    
+    // MARK: - Search Bar Delegate
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        
+        guard let movies = self.movies else { self.filteredMovies = nil; return; }
+        
+        if searchText.characters.count == 0 {
+            self.filteredMovies = nil;
+            return;
+        }
+        
+        self.filteredMovies = [[String : Any]]();
+        for movie in movies {
+            if let movie = movie as? [String : Any],
+                let movieTitle = movie[kJSONTitle] as? String,
+                let movieSummary = movie[kJSONDetail] as? String  {
+                
+                let titleRange = movieTitle.range(of: searchText);
+                let summaryRange = movieTitle.range(of: searchText);
+                if titleRange?.isEmpty == false || summaryRange?.isEmpty == false {
+                    self.filteredMovies?.append(movie);
+                }
+            }
+        }
+        self.tableView.reloadData();
+        
+    }
+
+
+    // MARK: - Segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier! == kShowDetailViewSegue,
             let destination = segue.destination as? DetailViewController {

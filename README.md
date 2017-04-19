@@ -2,6 +2,8 @@
 
 **Flicks** is a movies app using the [The Movie Database API](http://docs.themoviedb.apiary.io/#).
 
+Project Leaderboard Rank: **6** (out of 80 cohorts)
+
 Time spent: **15** hours spent in total
 
 ## User Stories
